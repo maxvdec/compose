@@ -78,24 +78,9 @@
 			path = Compose;
 			sourceTree = "<group>";
 		};
-		62CDC5442E22CC7900BAE6A1 /* ComposeTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ComposeTests;
-			sourceTree = "<group>";
-		};
-		62CDC54E2E22CC7900BAE6A1 /* ComposeUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ComposeUITests;
-			sourceTree = "<group>";
-		};
 		62CDC5642E22CD4A00BAE6A1 /* Thyme */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Thyme;
-			sourceTree = "<group>";
-		};
-		62CDC5732E22CD4A00BAE6A1 /* ThymeTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ThymeTests;
 			sourceTree = "<group>";
 		};
 		62CDC5962E22D78500BAE6A1 /* Tide */ = {
@@ -138,10 +123,7 @@
 			children = (
 				62CDC5D02E22E99E00BAE6A1 /* README.md */,
 				62CDC5362E22CC7800BAE6A1 /* Compose */,
-				62CDC5442E22CC7900BAE6A1 /* ComposeTests */,
-				62CDC54E2E22CC7900BAE6A1 /* ComposeUITests */,
 				62CDC5642E22CD4A00BAE6A1 /* Thyme */,
-				62CDC5732E22CD4A00BAE6A1 /* ThymeTests */,
 				62CDC5962E22D78500BAE6A1 /* Tide */,
 				62CDC5A22E22DAE400BAE6A1 /* Frameworks */,
 				62CDC5352E22CC7800BAE6A1 /* Products */,
