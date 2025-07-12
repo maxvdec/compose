@@ -69,6 +69,7 @@
 		62CDC5342E22CC7800BAE6A1 /* Compose.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Compose.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		62CDC5632E22CD4A00BAE6A1 /* Thyme.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Thyme.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		62CDC5952E22D78500BAE6A1 /* Tide.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Tide.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		62CDC5D02E22E99E00BAE6A1 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -135,6 +136,7 @@
 		62CDC52B2E22CC7800BAE6A1 = {
 			isa = PBXGroup;
 			children = (
+				62CDC5D02E22E99E00BAE6A1 /* README.md */,
 				62CDC5362E22CC7800BAE6A1 /* Compose */,
 				62CDC5442E22CC7900BAE6A1 /* ComposeTests */,
 				62CDC54E2E22CC7900BAE6A1 /* ComposeUITests */,
