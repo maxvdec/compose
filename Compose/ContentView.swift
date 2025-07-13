@@ -22,6 +22,8 @@ struct ContentView: View {
                     scene.camera.move(to: Position3d(0, 5, 15))
                     scene.objects.append(object)
                 }
+            MainUI()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }

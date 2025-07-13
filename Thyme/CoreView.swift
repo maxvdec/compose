@@ -187,8 +187,8 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
         gridUniforms.invViewProjection = viewProjection.inverse
         gridUniforms.gridSpacing = 0.001
         gridUniforms.cameraPos = camera.position.toSimd()
-        gridUniforms.fadeStart = 50.0
-        gridUniforms.fadeEnd = 100.0
+        gridUniforms.fadeStart = 300.0
+        gridUniforms.fadeEnd = 500.0
 
         if gridUniformsBuffer == nil {
             gridUniformsBuffer = device.makeBuffer(bytes: &gridUniforms,

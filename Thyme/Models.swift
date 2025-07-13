@@ -5,7 +5,7 @@ import Tide
 
 public extension CoreObject {
     /// Load a 3D model using Model I/O with comprehensive error handling and normal generation
-    static func loadModel(from url: URL, defaultColor: Tide.Color = .shadeOfWhite(0.7)) throws -> CoreObject {
+    static func loadModel(from url: URL, defaultColor: Tide.Color = .shadeOfWhite(1)) throws -> CoreObject {
         guard FileManager.default.fileExists(atPath: url.path) else {
             throw ModelLoadingError.fileNotFound
         }

@@ -43,8 +43,6 @@ struct GridUniforms {
     var cameraPos: simd_float3
     var fadeStart: Float
     var fadeEnd: Float
-    //var gridScale: Float
-    //var axisIntensity: Float
 
     init() {
         self.invViewProjection = matrix_identity_float4x4
@@ -52,7 +50,5 @@ struct GridUniforms {
         self.cameraPos = simd_float3(0, 0, 0)
         self.fadeStart = 10.0
         self.fadeEnd = 100.0
-        //self.gridScale = 1.0
-        //self.axisIntensity = 2.0
     }
 }

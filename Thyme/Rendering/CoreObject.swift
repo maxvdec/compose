@@ -103,6 +103,9 @@ public final class CoreObject: Identifiable, ObservableObject {
         var metalVertices = vertices.map {
             $0.toMetal()
         }
+        if vertices.count == 0 {
+            return
+        }
         buffer = Shared.properties.device.makeBuffer(bytes: &metalVertices, length: MemoryLayout<MetalVertex>.stride * metalVertices.count, options: [])
         if var indices = indexBufferData {
             indexBuffer = Shared.properties.device.makeBuffer(bytes: &indices, length: MemoryLayout<UInt32>.stride * indices.count)
