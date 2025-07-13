@@ -47,22 +47,37 @@ vertex VertexOut vertex_main(VertexIn in [[stage_in]], constant Uniforms& unifor
 fragment float4 fragment_main(VertexOut in [[stage_in]], constant Uniforms& uniforms [[buffer(1)]]) {
     float3 normal = normalize(in.worldNormal);
     
-    float3 cameraDir = normalize(uniforms.cameraPosition - in.worldPosition);
+    float3 viewDir = normalize(uniforms.cameraPosition - in.worldPosition);
     
-    float3 keyLightDir = normalize(cameraDir + float3(0.3, 0.5, 0.2));
+    float3 viewRight = normalize(cross(float3(0, 1, 0), viewDir));
+    float3 viewUp = cross(viewDir, viewRight);
+    
+    // Main key light (camera direction + slight offset up and right)
+    float3 keyLightDir = normalize(viewDir + viewUp * 0.3 + viewRight * 0.2);
     float keyLight = max(0.0, dot(normal, keyLightDir));
     
-    float3 fillLightDir = normalize(cameraDir + float3(-0.5, 0.2, 0.3));
-    float fillLight = max(0.0, dot(normal, fillLightDir)) * 0.4;
+    // Fill light (camera direction + offset left and slightly up)
+    float3 fillLightDir = normalize(viewDir + viewUp * 0.1 - viewRight * 0.4);
+    float fillLight = max(0.0, dot(normal, fillLightDir));
     
-    float3 rimLightDir = normalize(cameraDir + float3(0.0, 0.0, -1.0));
-    float rimLight = max(0.0, dot(normal, rimLightDir)) * 0.3;
+    // Back light (opposite to camera with slight up offset for rim)
+    float3 backLightDir = normalize(-viewDir + viewUp * 0.2);
+    float backLight = max(0.0, dot(normal, backLightDir));
     
-    float cameraLight = max(0.2, dot(normal, cameraDir)) * 0.6;
+    // Bottom light (camera direction + downward offset)
+    float3 bottomLightDir = normalize(viewDir - viewUp * 0.5);
+    float bottomLight = max(0.0, dot(normal, bottomLightDir));
     
-    float ambient = 0.3;
+    // Direct camera light (ensures front faces are always lit)
+    float cameraLight = max(0.0, dot(normal, viewDir));
     
-    float totalLight = ambient + keyLight * 0.8 + fillLight + rimLight + cameraLight;
+    float totalLight = 0 +
+                      keyLight * 0.6 +
+                      fillLight * 0.4 +
+                      backLight * 0.2 +
+                      bottomLight * 0.2 +
+                      cameraLight * 0.4;
+    
     totalLight = min(1.0, totalLight);
     
     float4 litColor = in.color * totalLight;

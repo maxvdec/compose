@@ -19,15 +19,19 @@ public extension Float {
 
 public class Camera {
     /// Point that indicates the position in the space of the camera
-    @Published public var position: Position3d {
+    @Published var position: Position3d {
         didSet {
+            distance = length(target.toSimd() - position.toSimd())
+            updateOrbitalParameters()
             viewMatrix()
         }
     }
 
     /// Point that indicates how the camera should be oriented to see that point
-    @Published public var target: Position3d {
+    @Published var target: Position3d {
         didSet {
+            distance = length(target.toSimd() - position.toSimd())
+            updateOrbitalParameters()
             viewMatrix()
         }
     }
@@ -111,6 +115,18 @@ public class Camera {
         )
     }
 
+    /// Move the camera to a determinate position
+    /// - Parameter position: The new position for the camera
+    public func move(to position: Position3d) {
+        self.position = position
+    }
+
+    /// Change the point that the camera treats as center
+    /// - Parameter point: The new center of the camera
+    public func look(at point: Position3d) {
+        target = point
+    }
+
     /// Function that generates and stores the projection matrix
     public func projectionMatrix() {
         let tanHalfFov = tan(fov / 2)
@@ -148,11 +164,12 @@ public class Camera {
     /// - Parameters:
     ///   - deltaX: The X scalar of the movement
     ///   - deltaY: The Y scalar of the movement
-    public func pan(deltaX: Float, deltaY: Float) {
+    public func pan(deltaX: Float, deltaY: Float, deltaZ: Float) {
         let right = normalize(cross(up.toSimd(), position.toSimd() - target.toSimd()))
         let upVector = normalize(cross(position.toSimd() - target.toSimd(), right))
+        let forward = normalize(target.toSimd() - position.toSimd())
 
-        let panOffset = right * deltaX + upVector * deltaY
+        let panOffset = right * deltaX + upVector * deltaY + forward * deltaZ
 
         let newTarget = target.toSimd() + panOffset
         let newPosition = position.toSimd() + panOffset
@@ -176,7 +193,16 @@ public class Camera {
         let z = distance * cos(elevation) * cos(azimuth)
 
         position = Position3d(orbitCenter.x + x, orbitCenter.y + y, orbitCenter.z + z)
+    }
 
-        target = orbitCenter
+    private func updateOrbitalParameters() {
+        orbitCenter = target
+        let fromTarget = position.toSimd() - target.toSimd()
+
+        if distance > 0 {
+            azimuth = atan2(fromTarget.x, fromTarget.z)
+            elevation = asin(fromTarget.y / distance)
+        }
     }
 }
+

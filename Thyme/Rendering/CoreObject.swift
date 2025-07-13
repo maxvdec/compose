@@ -151,3 +151,47 @@ public final class CoreObject: Identifiable, ObservableObject {
         model = translationMatrix * rotationMatrix * scaleMatrix
     }
 }
+
+public extension CoreObject {
+    /// Uses flat shading for the object, meaning that the normals are not going to be interpolated
+    func convertToFlatShading() {
+        guard let indices = indexBufferData else {
+            fatalError("Needed indices for flat shading")
+        }
+
+        var newVertices: [CoreVertex] = []
+
+        for i in stride(from: 0, to: indices.count, by: 3) {
+            guard i + 2 < indices.count else { break }
+
+            let i0 = Int(indices[i])
+            let i1 = Int(indices[i + 1])
+            let i2 = Int(indices[i + 2])
+
+            guard i0 < vertices.count, i1 < vertices.count, i2 < vertices.count else { continue }
+
+            let v0 = vertices[i0]
+            let v1 = vertices[i1]
+            let v2 = vertices[i2]
+
+            let edge1 = Vector3d(v1.position.x - v0.position.x, v1.position.y - v0.position.y, v1.position.z - v0.position.z)
+            let edge2 = Vector3d(v2.position.x - v0.position.x, v2.position.y - v0.position.y, v2.position.z - v0.position.z)
+            let faceNormal = cross(edge1, edge2).normalized()
+
+            var newV0 = v0
+            var newV1 = v1
+            var newV2 = v2
+
+            newV0.normal = faceNormal
+            newV1.normal = faceNormal
+            newV2.normal = faceNormal
+
+            newVertices.append(newV0)
+            newVertices.append(newV1)
+            newVertices.append(newV2)
+        }
+
+        vertices = newVertices
+        indexBufferData = indices
+    }
+}

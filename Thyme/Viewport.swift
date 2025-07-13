@@ -18,6 +18,7 @@ public class ThymeViewport: NSView {
     private var isRightMouseDown = false
     private var isLeftMouseDown = false
     private var isOtherMouseDown = false
+    private var pressedKeys = Set<String>()
     
     override public var acceptsFirstResponder: Bool {
         return true
@@ -55,6 +56,24 @@ public class ThymeViewport: NSView {
         mtkView.frame = bounds
     }
     
+    override public func keyDown(with event: NSEvent) {
+        if let characters = event.characters {
+            for character in characters {
+                pressedKeys.insert(String(character))
+            }
+        }
+        super.keyDown(with: event)
+    }
+
+    override public func keyUp(with event: NSEvent) {
+        if let characters = event.characters {
+            for character in characters {
+                pressedKeys.remove(String(character))
+            }
+        }
+        super.keyUp(with: event)
+    }
+
     override public func mouseDown(with event: NSEvent) {
         isLeftMouseDown = true
         lastMouseLocation = event.locationInWindow
@@ -127,7 +146,7 @@ public class ThymeViewport: NSView {
             if event.modifierFlags.contains(.shift) {
             } else {
                 let sensitivity: Float = 0.01
-                camera.pan(deltaX: -deltaX * sensitivity, deltaY: -deltaY * sensitivity)
+                camera.pan(deltaX: -deltaX * sensitivity, deltaY: -deltaY * sensitivity, deltaZ: 0.0)
             }
         }
             
@@ -152,8 +171,13 @@ public class ThymeViewport: NSView {
                 let zoomDelta = Float(event.scrollingDeltaY)
                 camera.zoom(delta: zoomDelta * 0.1)
             } else if event.modifierFlags.contains(.shift) {
-                let sensitivity: Float = 0.005
-                camera.pan(deltaX: -deltaX * sensitivity, deltaY: deltaY * sensitivity)
+                if event.modifierFlags.contains(.command) {
+                    let sensitivity: Float = 0.005
+                    camera.pan(deltaX: -deltaX * sensitivity, deltaY: 0.0, deltaZ: deltaY * sensitivity)
+                } else {
+                    let sensitivity: Float = 0.005
+                    camera.pan(deltaX: -deltaX * sensitivity, deltaY: deltaY * sensitivity, deltaZ: 0.0)
+                }
             } else {
                 let sensitivity: Float = 0.005
                 camera.orbit(deltaAzimuth: -deltaX * sensitivity, deltaElevation: deltaY * sensitivity)
