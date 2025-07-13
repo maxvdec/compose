@@ -42,7 +42,7 @@ public class ThymeViewport: NSView {
     
     private func setupMTKView() {
         mtkView.device = MTLCreateSystemDefaultDevice()
-        mtkView.clearColor = MTLClearColorMake(0, 0, 0, 1)
+        mtkView.clearColor = MTLClearColorMake(0.2, 0.2, 0.2, 1)
         mtkView.colorPixelFormat = .bgra8Unorm
         mtkView.isPaused = false
         mtkView.enableSetNeedsDisplay = false

@@ -35,3 +35,24 @@ struct Uniforms {
         memcpy(pointer, &newData, MemoryLayout<Self>.stride)
     }
 }
+
+/// Arguments to pass to the viewport grid shader
+struct GridUniforms {
+    var invViewProjection: simd_float4x4
+    var gridSpacing: Float
+    var cameraPos: simd_float3
+    var fadeStart: Float
+    var fadeEnd: Float
+    //var gridScale: Float
+    //var axisIntensity: Float
+
+    init() {
+        self.invViewProjection = matrix_identity_float4x4
+        self.gridSpacing = 1.0
+        self.cameraPos = simd_float3(0, 0, 0)
+        self.fadeStart = 10.0
+        self.fadeEnd = 100.0
+        //self.gridScale = 1.0
+        //self.axisIntensity = 2.0
+    }
+}

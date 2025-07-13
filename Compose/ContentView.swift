@@ -20,7 +20,6 @@ struct ContentView: View {
                     let object = try! CoreObject.loadModel(from: Bundle.main.url(forResource: "teapot", withExtension: "obj")!)
                     object.position = Position3d(0, 0, -1)
                     scene.camera.move(to: Position3d(0, 5, 15))
-                    object.convertToFlatShading()
                     scene.objects.append(object)
                 }
         }

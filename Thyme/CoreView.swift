@@ -20,6 +20,10 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
     private var uniformsBuffer: MTLBuffer!
     private var depthStencilState: MTLDepthStencilState!
 
+    private var gridPipelineState: MTLRenderPipelineState!
+    private var gridUniformsBuffer: MTLBuffer!
+    private var gridDepthStencilState: MTLDepthStencilState!
+
     var objects: [CoreObject]
     var camera: Camera
 
@@ -35,6 +39,18 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
         device = mtkView.device!
         let frameworkBundle = Bundle(for: ThymeMetalView.self)
         let lib = try! device.makeDefaultLibrary(bundle: frameworkBundle)
+
+        // Setup main rendering pipeline
+        setupMainPipeline(lib: lib)
+
+        // Setup grid rendering pipeline
+        setupGridPipeline(lib: lib)
+
+        // Setup depth stencil states
+        setupDepthStencilStates()
+    }
+
+    private func setupMainPipeline(lib: MTLLibrary) {
         let vertexFunc = lib.makeFunction(name: "vertex_main")!
         let fragFunc = lib.makeFunction(name: "fragment_main")!
 
@@ -73,11 +89,42 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
         pipelineDescriptor.depthAttachmentPixelFormat = .depth32Float
 
         pipelineState = try! device.makeRenderPipelineState(descriptor: pipelineDescriptor)
+    }
 
+    private func setupGridPipeline(lib: MTLLibrary) {
+        let gridVertexFunc = lib.makeFunction(name: "grid_vertex")!
+        let gridFragFunc = lib.makeFunction(name: "grid_fragment")!
+
+        let gridPipelineDescriptor = MTLRenderPipelineDescriptor()
+        gridPipelineDescriptor.vertexFunction = gridVertexFunc
+        gridPipelineDescriptor.fragmentFunction = gridFragFunc
+        gridPipelineDescriptor.colorAttachments[0].pixelFormat = .bgra8Unorm
+        gridPipelineDescriptor.depthAttachmentPixelFormat = .depth32Float
+
+        // Enable blending for grid transparency
+        gridPipelineDescriptor.colorAttachments[0].isBlendingEnabled = true
+        gridPipelineDescriptor.colorAttachments[0].rgbBlendOperation = .add
+        gridPipelineDescriptor.colorAttachments[0].alphaBlendOperation = .add
+        gridPipelineDescriptor.colorAttachments[0].sourceRGBBlendFactor = .sourceAlpha
+        gridPipelineDescriptor.colorAttachments[0].sourceAlphaBlendFactor = .sourceAlpha
+        gridPipelineDescriptor.colorAttachments[0].destinationRGBBlendFactor = .oneMinusSourceAlpha
+        gridPipelineDescriptor.colorAttachments[0].destinationAlphaBlendFactor = .oneMinusSourceAlpha
+
+        gridPipelineState = try! device.makeRenderPipelineState(descriptor: gridPipelineDescriptor)
+    }
+
+    private func setupDepthStencilStates() {
+        // Main depth stencil state
         let descriptor = MTLDepthStencilDescriptor()
         descriptor.depthCompareFunction = .less
         descriptor.isDepthWriteEnabled = true
         depthStencilState = device.makeDepthStencilState(descriptor: descriptor)
+
+        // Grid depth stencil state (read depth, don't write)
+        let gridDescriptor = MTLDepthStencilDescriptor()
+        gridDescriptor.depthCompareFunction = .less
+        gridDescriptor.isDepthWriteEnabled = false // Don't write to depth buffer
+        gridDepthStencilState = device.makeDepthStencilState(descriptor: gridDescriptor)
     }
 
     /// Unused initialitzation from coder
@@ -98,6 +145,10 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
 
     /// The main drawing loop for the MTLView
     /// - Parameter view: The view where the renderer should render its contents
+    ///
+    /// It executes mainly two renders (render passes):
+    /// - **The Grid Pass** serves as the grid and viewport of the editor
+    /// - **The Render Pass** renders the actual objects to the screen
     public func draw(in view: MTKView) {
         guard let drawable = view.currentDrawable,
               let descriptor = view.currentRenderPassDescriptor
@@ -114,8 +165,50 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
         }
 
         let renderEncoder = commandBuffer!.makeRenderCommandEncoder(descriptor: descriptor)!
+
+        // PASS 1: Render grid first (background)
+        renderGrid(renderEncoder: renderEncoder)
+
+        // PASS 2: Render main objects
+        renderObjects(renderEncoder: renderEncoder)
+
+        // End rendering
+        renderEncoder.endEncoding()
+        commandBuffer!.present(drawable)
+        commandBuffer!.commit()
+    }
+
+    private func renderGrid(renderEncoder: MTLRenderCommandEncoder) {
+        renderEncoder.setRenderPipelineState(gridPipelineState)
+        renderEncoder.setDepthStencilState(gridDepthStencilState)
+
+        var gridUniforms = GridUniforms()
+        let viewProjection = camera.projection * camera.view
+        gridUniforms.invViewProjection = viewProjection.inverse
+        gridUniforms.gridSpacing = 0.001
+        gridUniforms.cameraPos = camera.position.toSimd()
+        gridUniforms.fadeStart = 50.0
+        gridUniforms.fadeEnd = 100.0
+
+        if gridUniformsBuffer == nil {
+            gridUniformsBuffer = device.makeBuffer(bytes: &gridUniforms,
+                                                   length: MemoryLayout<GridUniforms>.stride,
+                                                   options: [])
+        } else {
+            let contents = gridUniformsBuffer.contents().bindMemory(to: GridUniforms.self, capacity: 1)
+            contents[0] = gridUniforms
+        }
+
+        renderEncoder.setVertexBuffer(gridUniformsBuffer, offset: 0, index: 0)
+        renderEncoder.setFragmentBuffer(gridUniformsBuffer, offset: 0, index: 0)
+
+        renderEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4)
+    }
+
+    private func renderObjects(renderEncoder: MTLRenderCommandEncoder) {
         renderEncoder.setRenderPipelineState(pipelineState)
         renderEncoder.setDepthStencilState(depthStencilState)
+
         var uniforms = Uniforms()
         uniformsBuffer = uniforms.makeBuffer()
         uniforms.projection = camera.projection
@@ -135,11 +228,6 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
                 renderEncoder.drawIndexedPrimitives(type: .triangle, indexCount: object.indexBufferData!.count, indexType: .uint32, indexBuffer: object.indexBuffer!, indexBufferOffset: 0)
             }
         }
-
-        // End rendering
-        renderEncoder.endEncoding()
-        commandBuffer!.present(drawable)
-        commandBuffer!.commit()
     }
 }
 
