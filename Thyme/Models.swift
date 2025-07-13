@@ -3,18 +3,18 @@ import ModelIO
 import SceneKit
 import Tide
 
-extension CoreObject {
-    /// Load a 3D model using Model I/O (Apple's official framework)
-    /// This is much more reliable than manual SceneKit parsing
-    public static func loadModel(from url: URL, defaultColor: Tide.Color = .shadeOfWhite(1.0)) throws -> CoreObject {
-        var object = try loadModelAndIndices(from: url, defaultColor: defaultColor)
-        object.object.indexBufferData = object.indices
-        return object.object
-    }
-    
-    /// Load with indices using Model I/O
-    public static func loadModelAndIndices(from url: URL, defaultColor: Tide.Color = .shadeOfWhite(1.0)) throws -> (object: CoreObject, indices: [UInt32]?) {
+public extension CoreObject {
+    /// Load a 3D model using Model I/O with comprehensive error handling
+    static func loadModel(from url: URL, defaultColor: Tide.Color = .shadeOfWhite(1.0)) throws -> CoreObject {
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            throw ModelLoadingError.fileNotFound
+        }
+        
         let asset = MDLAsset(url: url)
+        
+        guard asset.count > 0 else {
+            throw ModelLoadingError.noGeometryFound
+        }
         
         guard let firstObject = asset.object(at: 0) as? MDLMesh else {
             throw ModelLoadingError.noGeometryFound
@@ -25,30 +25,36 @@ extension CoreObject {
         guard !vertices.isEmpty else {
             throw ModelLoadingError.noGeometryFound
         }
-        
+    
         let object = CoreObject(vertices: vertices)
         if let indices = indices {
             object.submitIndices(indices: indices)
         }
         
-        return (object: object, indices: indices)
+        return object
     }
     
-    private static func extractVerticesFromMDLMesh(_ mesh: MDLMesh, defaultColor: Tide.Color) throws -> [CoreVertex] {
+    /// Load with indices using Model I/O
+    static func loadModelAndIndices(from url: URL, defaultColor: Tide.Color = .shadeOfWhite(1.0)) throws -> (object: CoreObject, indices: [UInt32]?) {
+        let object = try loadModel(from: url, defaultColor: defaultColor)
+        return (object: object, indices: object.indexBufferData)
+    }
+    
+    private static func extractVerticesAndIndicesFromMDLMesh(_ mesh: MDLMesh, defaultColor: Tide.Color) throws -> ([CoreVertex], [UInt32]?) {
         var vertices: [CoreVertex] = []
         
-        // Get position attribute
         guard let positionAttribute = mesh.vertexAttributeData(forAttributeNamed: MDLVertexAttributePosition) else {
             throw ModelLoadingError.noGeometryFound
         }
+        
         let positionPointer = positionAttribute.dataStart
         let positionStride = positionAttribute.stride
         let vertexCount = mesh.vertexCount
-
+        
         for i in 0..<vertexCount {
             let baseAddress = positionPointer.advanced(by: i * positionStride)
             let floatPtr = baseAddress.assumingMemoryBound(to: Float.self)
-
+            
             let position = Position3d(
                 x: floatPtr[0],
                 y: floatPtr[1],
@@ -57,18 +63,12 @@ extension CoreObject {
             vertices.append(CoreVertex(position: position, color: defaultColor))
         }
         
-        return vertices
-    }
-    
-    private static func extractVerticesAndIndicesFromMDLMesh(_ mesh: MDLMesh, defaultColor: Tide.Color) throws -> ([CoreVertex], [UInt32]?) {
-        let vertices = try extractVerticesFromMDLMesh(mesh, defaultColor: defaultColor)
-        
-        // Extract indices
         var indices: [UInt32]?
         if let submesh = mesh.submeshes?.firstObject as? MDLSubmesh {
             let indexBuffer = submesh.indexBuffer
             let indexCount = submesh.indexCount
             let indexType = submesh.indexType
+            
             let bufferData = indexBuffer.map().bytes
             
             indices = []
@@ -84,9 +84,10 @@ extension CoreObject {
                     indices?.append(intPtr[i])
                 }
             default:
+                print("⚠️ Unsupported index type: \(indexType)")
                 indices = nil
             }
-        }
+        } else {}
         
         return (vertices, indices)
     }

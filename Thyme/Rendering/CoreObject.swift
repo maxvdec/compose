@@ -80,7 +80,9 @@ public final class CoreObject: Identifiable, ObservableObject {
         makeBuffers()
         makeModel()
     }
-
+    
+    /// Function that submits the indices for index drawing
+    /// - Parameter indices: The array of indices that Thyme should follow for rendering
     public func submitIndices(indices: [UInt32]) {
         indexBufferData = indices
     }

@@ -18,6 +18,8 @@ struct MetalVertex {
 /// Arguments to pass to the metal shader
 struct Uniforms {
     var model: simd_float4x4 = .init()
+    var view: simd_float4x4 = .init()
+    var projection: simd_float4x4 = .init()
 
     func makeBuffer() -> MTLBuffer {
         var data = self

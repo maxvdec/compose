@@ -13,6 +13,7 @@
 		62CDC59E2E22D78500BAE6A1 /* Tide.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 62CDC5952E22D78500BAE6A1 /* Tide.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		62CDC5A32E22DAE400BAE6A1 /* Tide.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 62CDC5952E22D78500BAE6A1 /* Tide.framework */; };
 		62CDC5A42E22DAE400BAE6A1 /* Tide.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 62CDC5952E22D78500BAE6A1 /* Tide.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		62CDC5DD2E23A3A800BAE6A1 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 62CDC5DC2E23A3A800BAE6A1 /* .gitignore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +71,7 @@
 		62CDC5632E22CD4A00BAE6A1 /* Thyme.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Thyme.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		62CDC5952E22D78500BAE6A1 /* Tide.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Tide.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		62CDC5D02E22E99E00BAE6A1 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		62CDC5DC2E23A3A800BAE6A1 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -121,6 +123,7 @@
 		62CDC52B2E22CC7800BAE6A1 = {
 			isa = PBXGroup;
 			children = (
+				62CDC5DC2E23A3A800BAE6A1 /* .gitignore */,
 				62CDC5D02E22E99E00BAE6A1 /* README.md */,
 				62CDC5362E22CC7800BAE6A1 /* Compose */,
 				62CDC5642E22CD4A00BAE6A1 /* Thyme */,
@@ -287,6 +290,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				62CDC5DD2E23A3A800BAE6A1 /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

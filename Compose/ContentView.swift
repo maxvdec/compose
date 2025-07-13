@@ -16,13 +16,11 @@ struct ContentView: View {
             ThymeView(scene: scene)
                 .ignoresSafeArea()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-            VStack {
-                Spacer()
-                Button("Add Teapot") {
+                .onAppear {
                     let object = try! CoreObject.loadModel(from: Bundle.main.url(forResource: "teapot", withExtension: "obj")!)
+                    object.position = Position3d(0, 0, -1)
                     scene.objects.append(object)
                 }
-            }
         }
     }
 }

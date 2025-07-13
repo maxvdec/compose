@@ -10,6 +10,7 @@ import Foundation
 import Metal
 import MetalKit
 import SwiftUI
+import Tide
 
 /// The core view where Thyme renders objects
 public final class ThymeMetalView: NSObject, MTKViewDelegate {
@@ -18,13 +19,16 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
     private var device: MTLDevice!
     private var uniformsBuffer: MTLBuffer!
 
-    var objects: [CoreObject] = []
+    var objects: [CoreObject]
+    var camera: Camera
 
     /// The initializer for the Thyme rendering view
     /// - Parameters:
     ///   - mtkView: The view where the renderer should draw
     ///   - objects: The objects that Thyme has to draw to screen
-    public init(mtkView: MTKView, objects: [CoreObject]) {
+    public init(mtkView: MTKView, objects: [CoreObject], camera: Camera) {
+        self.camera = camera
+        self.objects = objects
         super.init()
 
         device = mtkView.device!
@@ -74,7 +78,9 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
     /// - Parameters:
     ///   - view: The view that has changed
     ///   - size: The target domains the view is reaching
-    public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
+    public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        camera.aspectRatio = Float(size.width / size.height)
+    }
 
     /// The main drawing loop for the MTLView
     /// - Parameter view: The view where the renderer should render its contents
@@ -97,6 +103,8 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
         renderEncoder.setRenderPipelineState(pipelineState)
         var uniforms = Uniforms()
         uniformsBuffer = uniforms.makeBuffer()
+        uniforms.projection = camera.projection
+        uniforms.view = camera.view
 
         for object in objects {
             renderEncoder.setVertexBuffer(object.buffer, offset: 0, index: 0)
@@ -120,27 +128,25 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
 
 /// The representation of a ThymeMetalView for SwiftUI
 public struct ThymeView: NSViewRepresentable {
+    public typealias NSViewType = ThymeViewport
+
     @ObservedObject public var scene: ThymeScene
 
     public init(scene: ThymeScene) {
         self.scene = scene
     }
 
-    public func makeNSView(context: Context) -> MTKView {
-        let mtkView = MTKView()
-        mtkView.device = MTLCreateSystemDefaultDevice()
-        mtkView.clearColor = MTLClearColorMake(0, 0, 0, 1)
-        mtkView.colorPixelFormat = .bgra8Unorm
-        mtkView.isPaused = false
-        mtkView.enableSetNeedsDisplay = false
-        mtkView.preferredFramesPerSecond = 60
+    public func makeNSView(context: Context) -> ThymeViewport {
+        let interactiveView = ThymeViewport(camera: scene.camera)
+        let mtkView = interactiveView.getMTKView()
 
-        context.coordinator.renderer = ThymeMetalView(mtkView: mtkView, objects: scene.objects)
+        context.coordinator.renderer = ThymeMetalView(mtkView: mtkView, objects: scene.objects, camera: scene.camera)
         mtkView.delegate = context.coordinator.renderer
-        return mtkView
+
+        return interactiveView
     }
 
-    public func updateNSView(_ nsView: MTKView, context: Context) {
+    public func updateNSView(_ nsView: ThymeViewport, context: Context) {
         context.coordinator.renderer?.objects = scene.objects
     }
 
@@ -155,8 +161,10 @@ public struct ThymeView: NSViewRepresentable {
 
 public final class ThymeScene: ObservableObject {
     @Published public var objects: [CoreObject] = []
+    @Published public var camera: Camera = .init()
 
-    public init(objects: [CoreObject] = []) {
+    public init(objects: [CoreObject] = [], camera: Camera = Camera()) {
         self.objects = objects
+        self.camera = camera
     }
 }
