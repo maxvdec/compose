@@ -18,6 +18,7 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
     private var pipelineState: MTLRenderPipelineState!
     private var device: MTLDevice!
     private var uniformsBuffer: MTLBuffer!
+    private var depthStencilState: MTLDepthStencilState!
 
     var objects: [CoreObject]
     var camera: Camera
@@ -57,13 +58,26 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
         vertexDesc.attributes[1].offset = offset
         vertexDesc.attributes[1].bufferIndex = 0
 
+        offset += MemoryLayout<simd_float4>.stride
+
+        // Normals attribute
+        vertexDesc.attributes[2].format = .float3
+        vertexDesc.attributes[2].offset = offset
+        vertexDesc.attributes[2].bufferIndex = 0
+
         vertexDesc.layouts[0].stepFunction = .perVertex
         vertexDesc.layouts[0].stepRate = 1
         vertexDesc.layouts[0].stride = MemoryLayout<MetalVertex>.stride
 
         pipelineDescriptor.vertexDescriptor = vertexDesc
+        pipelineDescriptor.depthAttachmentPixelFormat = .depth32Float
 
         pipelineState = try! device.makeRenderPipelineState(descriptor: pipelineDescriptor)
+
+        let descriptor = MTLDepthStencilDescriptor()
+        descriptor.depthCompareFunction = .less
+        descriptor.isDepthWriteEnabled = true
+        depthStencilState = device.makeDepthStencilState(descriptor: descriptor)
     }
 
     /// Unused initialitzation from coder
@@ -101,16 +115,19 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
 
         let renderEncoder = commandBuffer!.makeRenderCommandEncoder(descriptor: descriptor)!
         renderEncoder.setRenderPipelineState(pipelineState)
+        renderEncoder.setDepthStencilState(depthStencilState)
         var uniforms = Uniforms()
         uniformsBuffer = uniforms.makeBuffer()
         uniforms.projection = camera.projection
         uniforms.view = camera.view
+        uniforms.cameraPosition = camera.position.toSimd()
 
         for object in objects {
             renderEncoder.setVertexBuffer(object.buffer, offset: 0, index: 0)
             uniforms.model = object.model
             uniforms.modifyBuffer(&uniformsBuffer)
             renderEncoder.setVertexBuffer(uniformsBuffer, offset: 0, index: 1)
+            renderEncoder.setFragmentBuffer(uniformsBuffer, offset: 0, index: 1)
 
             if object.indexBuffer == nil {
                 renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: object.vertices.count)

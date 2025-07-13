@@ -16,16 +16,19 @@ public struct CoreVertex {
     public var position: Position3d
     /// The color of the target vertex
     public var color: Tide.Color
+    /// Property that indicates the shader which way is up
+    public var normal: Vector3d = [0, 0, 0]
 
-    public init(position: Position3d, color: Tide.Color) {
+    public init(position: Position3d, color: Tide.Color, normal: Vector3d = [0, 0, 0]) {
         self.position = position
         self.color = color
+        self.normal = normal
     }
 
     /// Helper function that transforms a CoreVertex to a Metal Vertex
     /// - Returns: A MetalVertex result of the transformation
     func toMetal() -> MetalVertex {
-        return MetalVertex(position: position.toSimd(), color: color.toSimd())
+        return MetalVertex(position: position.toSimd(), color: color.toSimd(), normals: normal.toSimd())
     }
 }
 
@@ -80,11 +83,19 @@ public final class CoreObject: Identifiable, ObservableObject {
         makeBuffers()
         makeModel()
     }
-    
+
     /// Function that submits the indices for index drawing
     /// - Parameter indices: The array of indices that Thyme should follow for rendering
     public func submitIndices(indices: [UInt32]) {
         indexBufferData = indices
+    }
+
+    /// Function that submits normals to the target vertices
+    /// - Parameter normals: The normals submitted to the vertices
+    public func submitNormals(normals: [Vector3d]) {
+        for i in vertices.indices {
+            vertices[i].normal = normals[i]
+        }
     }
 
     /// Function that makes the vertex buffer based on the vertices that the Object has

@@ -13,6 +13,7 @@ import simd
 struct MetalVertex {
     var position: simd_float3
     var color: simd_float4
+    var normals: simd_float3
 }
 
 /// Arguments to pass to the metal shader
@@ -20,6 +21,7 @@ struct Uniforms {
     var model: simd_float4x4 = .init()
     var view: simd_float4x4 = .init()
     var projection: simd_float4x4 = .init()
+    var cameraPosition: simd_float3 = .init()
 
     func makeBuffer() -> MTLBuffer {
         var data = self

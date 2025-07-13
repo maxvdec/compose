@@ -47,6 +47,7 @@ public class ThymeViewport: NSView {
         mtkView.enableSetNeedsDisplay = false
         mtkView.preferredFramesPerSecond = 60
         mtkView.translatesAutoresizingMaskIntoConstraints = false
+        mtkView.depthStencilPixelFormat = .depth32Float
     }
     
     override public func layout() {
