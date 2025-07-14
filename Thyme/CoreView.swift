@@ -167,7 +167,7 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
         let renderEncoder = commandBuffer!.makeRenderCommandEncoder(descriptor: descriptor)!
 
         // PASS 1: Render grid first (background)
-        renderGrid(renderEncoder: renderEncoder)
+        // renderGrid(renderEncoder: renderEncoder)
 
         // PASS 2: Render main objects
         renderObjects(renderEncoder: renderEncoder)

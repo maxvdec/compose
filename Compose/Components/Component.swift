@@ -108,18 +108,6 @@ struct UIText: Component {
     }
 }
 
-struct Vector3Input: Component {
-    var out: Binding<Vector3d>
-
-    init(out: Binding<Vector3d>) {
-        self.out = out
-    }
-
-    func render() -> any View {
-        Text("hello")
-    }
-}
-
 @resultBuilder
 struct ComponentBuilder {
     static func buildBlock(_ components: [any Component]...) -> [any Component] {
