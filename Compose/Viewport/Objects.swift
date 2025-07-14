@@ -9,6 +9,7 @@ import SwiftUI
 import Thyme
 import Tide
 
+/// The core object view
 struct ObjectTreeView: View {
     @State private var objects: [Object<CoreObject>] = [
         Object(name: "Object A", coreObject: CoreObject(vertices: [])),

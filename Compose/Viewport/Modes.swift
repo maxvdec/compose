@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// Change of selection between viewing modes
 struct Modes: View {
     @State private var selection: String = "scene"
     var body: some View {

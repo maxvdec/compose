@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// The main UI for Compose
 struct MainUI: View {
     var body: some View {
         HStack {
@@ -19,8 +20,8 @@ struct MainUI: View {
                 Spacer()
             }
             Spacer()
-            Text("Hello")
-                .frame(maxWidth: 250, maxHeight: .infinity)
+            Inspector()
+                .padding()
         }
     }
 }
