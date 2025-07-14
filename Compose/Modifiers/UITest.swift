@@ -12,7 +12,12 @@ struct UITestModifier: Modifier {
     var keyname: String = "test.uitest"
     var interface: any Component {
         ConfigureView {
-            UIText("Hello")
+            Section(title: "Text") {
+                UIText("Hello")
+                UIText("I warn you").warning()
+                UIText("This is a mistake").error()
+                UIText("I feel empty").noBackground()
+            }
         }
     }
 }

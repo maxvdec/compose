@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Tide
 
 /// Component in an inspector's UI
 public protocol Component {
@@ -27,7 +28,7 @@ public protocol Modifier {
 /// Simple padding component for UI
 struct Padding: Component {
     func render() -> any View {
-        return Spacer()
+        return AnyView(Spacer())
     }
 }
 
@@ -46,17 +47,36 @@ struct UIText: Component {
     /// The style in which the text is depicted
     private var backgroundStyle: Style = .background
 
+    // Other text customizes
+    private var textColor: SwiftUI.Color = .black
+    private var bold: Bool = false
+
     init(_ contents: String) {
         self.contents = contents
     }
 
     func render() -> any View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 10)
-                .opacity(0.2)
+        AnyView(ZStack {
+            if backgroundStyle == .background {
+                RoundedRectangle(cornerRadius: 10)
+                    .opacity(0.2)
+            } else if backgroundStyle == .warning {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(.yellow)
+                    .opacity(0.2)
+            } else if backgroundStyle == .error {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(.red)
+                    .opacity(0.2)
+            } else {
+                RoundedRectangle(cornerRadius: 10)
+                    .opacity(0)
+            }
             Text(contents)
+                .foregroundStyle(textColor)
+                .bold(bold)
                 .padding(6)
-        }
+        })
     }
 
     /// Disable the default background of the text
@@ -72,6 +92,8 @@ struct UIText: Component {
     func warning() -> UIText {
         var copy = self
         copy.backgroundStyle = .warning
+        copy.textColor = .brown.opacity(0.7)
+        copy.bold = true
         return copy
     }
 
@@ -80,7 +102,21 @@ struct UIText: Component {
     func error() -> UIText {
         var copy = self
         copy.backgroundStyle = .error
+        copy.textColor = .red
+        copy.bold = true
         return copy
+    }
+}
+
+struct Vector3Input: Component {
+    var out: Binding<Vector3d>
+
+    init(out: Binding<Vector3d>) {
+        self.out = out
+    }
+
+    func render() -> any View {
+        Text("hello")
     }
 }
 
@@ -110,7 +146,7 @@ struct ComponentBuilder {
 struct ConfigureView: Component {
     @ComponentBuilder var content: () -> [any Component]
 
-    static subscript(_ content: any Component...) -> any View {
+    static subscript(_ content: any Component...) -> some View {
         let views = content.map { AnyView($0.render()) }
         return VStack {
             ForEach(0 ..< views.count, id: \.self) { index in
@@ -121,10 +157,60 @@ struct ConfigureView: Component {
 
     func render() -> any View {
         let views = content().map { AnyView($0.render()) }
-        return VStack {
+        return AnyView(VStack {
             ForEach(0 ..< views.count, id: \.self) { index in
                 views[index]
             }
+        })
+    }
+}
+
+struct Section: Component {
+    let title: String
+    @ComponentBuilder var content: () -> [any Component]
+    @State private var isExpanded: Bool = true
+
+    static func make(title: String, @ComponentBuilder _ content: @escaping () -> [any Component]) -> some View {
+        AnyView(_SectionView(title: title, content: content))
+    }
+
+    func render() -> any View {
+        AnyView(_SectionView(title: title, content: content))
+    }
+}
+
+private struct _SectionView: View {
+    let title: String
+    let content: () -> [any Component]
+    @State private var isExpanded = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Button(action: {
+                isExpanded.toggle()
+            }) {
+                HStack {
+                    Image(systemName: "chevron.right")
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                    Text(title)
+                        .bold()
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 3)
+            .padding(.vertical, 3)
+
+            if isExpanded {
+                let components = content()
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(0 ..< components.count, id: \.self) { index in
+                        components[index].render() as! AnyView
+                    }
+                }
+            }
         }
+        .padding(.vertical, 4)
     }
 }
