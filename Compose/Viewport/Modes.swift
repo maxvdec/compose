@@ -12,12 +12,30 @@ struct Modes: View {
     var body: some View {
         GlassEffectContainer {
             HStack {
-                Button {} label: {
+                Button(action: { selection = "scene" }) {
                     Text("Scene")
                         .padding(.vertical, 4)
-                        .padding(.horizontal, 30)
-                }.padding(2).buttonStyle(.borderless).cornerRadius(8).glassEffect()
-                Button("Hello") {}.padding(2).buttonStyle(GlassButtonStyle())
+                        .padding(.horizontal, 25)
+                        .background(selection == "scene" ? Color.secondary.opacity(0.2) : Color.clear)
+                        .cornerRadius(10)
+                }.padding(2).buttonStyle(.borderless).glassEffect()
+                Button(action: { selection = "material" }) {
+                    Text("Material")
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 25)
+                        .background(selection == "material" ? Color.secondary.opacity(0.2) : Color.clear)
+                        .cornerRadius(10)
+                }.padding(2).buttonStyle(.borderless).glassEffect()
+                Button(action: { selection = "compute" }) {
+                    Text("Compute")
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 25)
+                        .background(selection == "compute" ? Color.secondary.opacity(0.2) : Color.clear)
+                        .cornerRadius(10)
+                }.padding(2).buttonStyle(.borderless).glassEffect()
+            }.padding(.horizontal, 4).padding(.vertical, 4).background {
+                RoundedRectangle(cornerRadius: 20)
+                    .foregroundStyle(.white).shadow(color: .secondary.opacity(0.4), radius: 8)
             }
         }
     }
@@ -26,4 +44,5 @@ struct Modes: View {
 #Preview {
     Modes()
         .frame(maxWidth: .infinity)
+        .padding()
 }
