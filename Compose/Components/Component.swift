@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Tide
+import Thyme
 
 /// Component in an inspector's UI
 public protocol Component {
@@ -23,6 +24,8 @@ public protocol Modifier {
     var icon: String? { get }
     /// A unique identifier to detect the modifier
     var keyname: String { get }
+    /// The object in the Thyme viewport where you can change its properties
+    var thymeObject: Object<CoreObject>? { get set }
 }
 
 /// Simple padding component for UI

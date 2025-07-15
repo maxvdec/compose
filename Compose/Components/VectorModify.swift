@@ -9,6 +9,7 @@ import Combine
 import SwiftUI
 import Tide
 
+/// Conditions to warn for extreme values
 struct Vector3AxisWarning {
     var x: Bool
     var xMessage: String = ""
@@ -18,6 +19,7 @@ struct Vector3AxisWarning {
     var zMessage: String = ""
 }
 
+/// View that configures a Vector3d
 struct Vector3Input: Component {
     var title: String
     var value: Vector3d
@@ -239,6 +241,7 @@ struct Vector4AxisWarning {
     var wMessage: String = ""
 }
 
+/// View to change a Vector4d Input
 struct Vector4Input: Component {
     var title: String
     var value: Vector4d

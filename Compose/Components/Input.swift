@@ -9,12 +9,14 @@ import Combine
 import SwiftUI
 import Tide
 
+/// Checkbox that can be either on or off
 struct Checkbox: Component {
     var label: String
     var onChange: (Bool) -> Void
     var style: CheckboxStyle = .checkbox
     var value: Bool
-
+    
+    /// Style of a checkbox. Maps to SwiftUI internal types
     enum CheckboxStyle {
         case checkbox
         case switcher

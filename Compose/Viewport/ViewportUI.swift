@@ -6,9 +6,11 @@
 //
 
 import SwiftUI
+import Thyme
 
 /// The main UI for Compose
 struct MainUI: View {
+    @ObservedObject var scene: ThymeScene
     var body: some View {
         HStack {
             ObjectTreeView()
@@ -20,7 +22,7 @@ struct MainUI: View {
                 Spacer()
             }
             Spacer()
-            Inspector()
+            Inspector(scene: scene)
                 .padding()
         }
     }

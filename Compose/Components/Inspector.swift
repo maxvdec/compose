@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import Thyme
+import Tide
 
+/// The main inspector view, designed to change and tweak properties of objects
 struct Inspector: View {
-    @State private var modifiers: [any Modifier] = [
-        UITestModifier()
-    ]
+    @ObservedObject var scene: ThymeScene
+    @State private var modifiers: [any Modifier] = []
 
     @State private var width: CGFloat = 250
     @State private var offsetX: CGFloat = 0
@@ -67,9 +69,11 @@ struct Inspector: View {
             .offset(x: offsetX)
         }
         .frame(maxHeight: .infinity)
+        .onAppear { modifiers = [TransformModifier(thymeObject: scene.appObjects.first), UITestModifier()] }
     }
 }
 
 #Preview {
-    Inspector()
+    @Previewable @StateObject var scene = ThymeScene()
+    Inspector(scene: scene)
 }

@@ -266,6 +266,7 @@ public struct ThymeView: NSViewRepresentable {
 
 public final class ThymeScene: ObservableObject {
     @Published public var objects: [CoreObject] = []
+    @Published public var appObjects: [Object<CoreObject>] = []
     @Published public var camera: Camera = .init()
 
     public init(objects: [CoreObject] = [], camera: Camera = Camera()) {
