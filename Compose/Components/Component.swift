@@ -6,8 +6,8 @@
 //
 
 import SwiftUI
-import Tide
 import Thyme
+import Tide
 
 /// Component in an inspector's UI
 public protocol Component {
@@ -15,7 +15,7 @@ public protocol Component {
 }
 
 /// Modifier that changes the object properties
-public protocol Modifier {
+public protocol Modifier: Identifiable {
     /// The main UI Interface to change modifier's properties
     var interface: any Component { get }
     /// The display name of the modifier
@@ -28,6 +28,8 @@ public protocol Modifier {
     var thymeScene: ThymeScene? { get set }
     /// The Index of the object that should be modified
     var objectIndex: Int? { get set }
+    /// The ID for the modifier
+    var id: UUID { get }
 }
 
 /// Simple padding component for UI

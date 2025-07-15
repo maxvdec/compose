@@ -26,12 +26,13 @@ struct Vector3Input: Component {
     var components: [String]
     var onChange: (Vector3d) -> Void
     var units: String = ""
+    var sensitivity: Float = 0.01
     var isWarning: (Vector3d) -> Vector3AxisWarning = { _ in
         Vector3AxisWarning(x: false, y: false, z: false)
     }
 
     func render() -> any View {
-        AnyView(Vector3InputView(title: title, value: value, components: components, onChange: onChange, isWarning: isWarning, units: units))
+        AnyView(Vector3InputView(title: title, value: value, components: components, onChange: onChange, isWarning: isWarning, units: units, sensitivity: sensitivity))
     }
 }
 
@@ -73,7 +74,7 @@ struct Vector3InputView: View {
 
     private var sensitivity: Float = 0.01
 
-    init(title: String, value: Vector3d, components: [String], onChange: @escaping (Vector3d) -> Void, isWarning: @escaping (Vector3d) -> Vector3AxisWarning, units: String) {
+    init(title: String, value: Vector3d, components: [String], onChange: @escaping (Vector3d) -> Void, isWarning: @escaping (Vector3d) -> Vector3AxisWarning, units: String, sensitivity: Float) {
         self._componentA = State(initialValue: value.x)
         self._componentB = State(initialValue: value.y)
         self._componentC = State(initialValue: value.z)
@@ -89,6 +90,7 @@ struct Vector3InputView: View {
         self._warningMessageB = State(initialValue: initialWarnings.yMessage)
         self._warningMessageC = State(initialValue: initialWarnings.zMessage)
         self.units = units
+        self.sensitivity = sensitivity
     }
 
     func estimatedWidth(forCharacters count: Int) -> CGFloat {

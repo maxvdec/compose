@@ -52,7 +52,7 @@ class TransformModifierModel: ObservableObject {
             self.index = nil
             return
         }
-        
+
         if thymeScene.appObjects.isEmpty {
             return
         }
@@ -72,6 +72,7 @@ struct TransformModifier: Modifier {
     var thymeScene: ThymeScene?
     var objectIndex: Int?
     var model: TransformModifierModel?
+    let id: UUID = .init()
 
     init(thymeScene: ThymeScene?, index: Int?) {
         self.thymeScene = thymeScene
@@ -85,8 +86,10 @@ struct TransformModifier: Modifier {
                 model?.position = newValue
             })
             Vector3Input(title: "Rotation", value: model?.rotation ?? [0, 0, 0], components: ["x", "y", "z"], onChange: { newValue in
-                model?.rotation = newValue
-            }, units: "º")
+                model?.rotation.x = Float.toRadians(newValue.x)
+                model?.rotation.y = Float.toRadians(newValue.y)
+                model?.rotation.z = Float.toRadians(newValue.z)
+            }, units: "º", sensitivity: 0.2)
             Vector3Input(title: "Scale", value: model?.scale ?? [1, 1, 1], components: ["x", "y", "z"], onChange: { newValue in
                 model?.scale = newValue
             })

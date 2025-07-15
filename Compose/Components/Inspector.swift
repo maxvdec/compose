@@ -37,7 +37,16 @@ struct Inspector: View {
 
             VStack {
                 ScrollView {
-                    ForEach($modifiers, id: \.keyname) { $modifier in
+                    if scene.appObjects.count > 0 {
+                        HStack {
+                            Text(scene.appObjects[0].name)
+                                .fontWeight(.heavy)
+                                .foregroundStyle(.secondary.opacity(0.6))
+                                .font(.title2)
+                            Spacer()
+                        }.padding(.bottom, 7)
+                    }
+                    ForEach($modifiers, id: \.id) { $modifier in
                         VStack {
                             HStack {
                                 if modifier.icon != nil {
@@ -70,7 +79,15 @@ struct Inspector: View {
         }
         .frame(maxHeight: .infinity)
         .onAppear {
-            modifiers = [TransformModifier(thymeScene: scene, index: 0), UITestModifier()]
+            modifiers = []
+        }
+        .onChange(of: scene.appObjects) { old, new in
+            let added = new.filter { !old.contains($0) }
+            let removed = old.filter { !new.contains($0) }
+
+            if !added.isEmpty || !removed.isEmpty {
+                modifiers = [TransformModifier(thymeScene: scene, index: 0), SmoothModifier(thymeScene: scene, index: 0), UITestModifier()]
+            }
         }
     }
 }

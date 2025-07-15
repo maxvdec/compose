@@ -20,6 +20,8 @@ class UITestModifierModel: ObservableObject {
 
 /// Test modifier for core UI elements
 struct UITestModifier: Modifier {
+    let id: UUID = .init()
+
     var thymeScene: Thyme.ThymeScene? = nil
     var objectIndex: Int? = nil
 

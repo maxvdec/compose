@@ -9,7 +9,11 @@ import Combine
 import SwiftUI
 
 /// Class that represents a object in a scene
-public class Object<T>: ObservableObject {
+public class Object<T: Equatable>: ObservableObject, Equatable {
+    public static func == (lhs: Object<T>, rhs: Object<T>) -> Bool {
+        return lhs.coreObject == rhs.coreObject
+    }
+    
     /// The Core Object that depends of each renderer: Thyme, Arch or Trace
     @Published public var coreObject: T
     /// The name of the object

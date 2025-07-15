@@ -33,7 +33,11 @@ public struct CoreVertex {
 }
 
 /// Class that defines the highest abstraction of a representable object
-public final class CoreObject: Identifiable, ObservableObject {
+public final class CoreObject: Identifiable, ObservableObject, Equatable {
+    public static func == (lhs: CoreObject, rhs: CoreObject) -> Bool {
+        return lhs.id == rhs.id
+    }
+
     /// The vertices that conform the object
     @Published var vertices: [CoreVertex] {
         didSet {
@@ -69,6 +73,24 @@ public final class CoreObject: Identifiable, ObservableObject {
         }
     }
 
+    private var lastSmooth: Bool = true
+
+    @Published public var shadeSmooth: Bool = true {
+        didSet {
+            if shadeSmooth != lastSmooth {
+                if !shadeSmooth {
+                    convertToSmoothShading()
+                } else {
+                    convertToFlatShading()
+                }
+                makeBuffers()
+                lastSmooth = shadeSmooth
+            } else {
+                lastSmooth = !shadeSmooth
+            }
+        }
+    }
+
     /// The buffer that contains the main vertex data
     var buffer: MTLBuffer!
 
@@ -77,6 +99,9 @@ public final class CoreObject: Identifiable, ObservableObject {
 
     /// Matrix that defines transformations of the object
     var model: float4x4 = .init()
+
+    /// The ID of the object
+    public let id: UUID = .init()
 
     public init(vertices: [CoreVertex]) {
         self.vertices = vertices
@@ -163,6 +188,7 @@ public extension CoreObject {
         }
 
         var newVertices: [CoreVertex] = []
+        var newIndices: [UInt32] = []
 
         for i in stride(from: 0, to: indices.count, by: 3) {
             guard i + 2 < indices.count else { break }
@@ -189,12 +215,89 @@ public extension CoreObject {
             newV1.normal = faceNormal
             newV2.normal = faceNormal
 
+            // Add vertices to new array
             newVertices.append(newV0)
             newVertices.append(newV1)
             newVertices.append(newV2)
+
+            // Create new indices that reference the new vertices
+            let baseIndex = UInt32(newVertices.count - 3)
+            newIndices.append(baseIndex)
+            newIndices.append(baseIndex + 1)
+            newIndices.append(baseIndex + 2)
         }
 
         vertices = newVertices
-        indexBufferData = indices
+        indexBufferData = newIndices
+    }
+
+    /// Converts flat shaded geometry back to smooth shading by merging duplicate vertices
+    /// and averaging their normals
+    func convertToSmoothShading(tolerance: Float = 0.0001) {
+        guard !vertices.isEmpty else { return }
+        guard vertices.count % 3 == 0 else {
+            fatalError("Vertex count must be multiple of 3 for triangulated mesh. Vertices were \(vertices.count)")
+        }
+
+        var uniqueVertices: [CoreVertex] = []
+        var newIndices: [UInt32] = []
+        var vertexMap: [String: Int] = [:]
+        var normalAccumulator: [Vector3d] = []
+        var normalCounts: [Int] = []
+
+        func positionKey(for vertex: CoreVertex) -> String {
+            let x = String(format: "%.6f", vertex.position.x)
+            let y = String(format: "%.6f", vertex.position.y)
+            let z = String(format: "%.6f", vertex.position.z)
+            return "\(x),\(y),\(z)"
+        }
+
+        for i in stride(from: 0, to: vertices.count, by: 3) {
+            let v0 = vertices[i]
+            let v1 = vertices[i + 1]
+            let v2 = vertices[i + 2]
+
+            let edge1 = Vector3d(v1.position.x - v0.position.x,
+                                 v1.position.y - v0.position.y,
+                                 v1.position.z - v0.position.z)
+            let edge2 = Vector3d(v2.position.x - v0.position.x,
+                                 v2.position.y - v0.position.y,
+                                 v2.position.z - v0.position.z)
+            let faceNormal = cross(edge1, edge2)
+            let faceArea = faceNormal.magnitude() * 0.5
+            let normalizedFaceNormal = faceNormal.normalized()
+
+            for vertex in [v0, v1, v2] {
+                let key = positionKey(for: vertex)
+
+                if let existingIndex = vertexMap[key] {
+                    normalAccumulator[existingIndex] = normalAccumulator[existingIndex] +
+                        (normalizedFaceNormal * faceArea)
+                    normalCounts[existingIndex] += 1
+                } else {
+                    let newIndex = uniqueVertices.count
+                    vertexMap[key] = newIndex
+
+                    var newVertex = vertex
+                    uniqueVertices.append(newVertex)
+                    normalAccumulator.append(normalizedFaceNormal * faceArea)
+                    normalCounts.append(1)
+                }
+            }
+        }
+
+        for i in 0 ..< uniqueVertices.count {
+            uniqueVertices[i].normal = normalAccumulator[i].normalized()
+        }
+
+        for vertex in vertices {
+            let key = positionKey(for: vertex)
+            if let index = vertexMap[key] {
+                newIndices.append(UInt32(index))
+            }
+        }
+
+        vertices = uniqueVertices
+        indexBufferData = newIndices
     }
 }
