@@ -167,6 +167,52 @@ struct Section: Component {
     }
 }
 
+struct Row: Component {
+    @ComponentBuilder var content: () -> [any Component]
+    @State private var isExpanded: Bool = true
+
+    static func make(title: String, @ComponentBuilder _ content: @escaping () -> [any Component]) -> some View {
+        let components = content()
+        return AnyView(HStack {
+            ForEach(0 ..< components.count, id: \.self) { index in
+                components[index].render() as! AnyView
+            }
+        })
+    }
+
+    func render() -> any View {
+        let components = content()
+        return AnyView(HStack {
+            ForEach(0 ..< components.count, id: \.self) { index in
+                components[index].render() as! AnyView
+            }
+        })
+    }
+}
+
+struct Column: Component {
+    @ComponentBuilder var content: () -> [any Component]
+    @State private var isExpanded: Bool = true
+
+    static func make(title: String, @ComponentBuilder _ content: @escaping () -> [any Component]) -> some View {
+        let components = content()
+        return AnyView(VStack(alignment: .leading) {
+            ForEach(0 ..< components.count, id: \.self) { index in
+                components[index].render() as! AnyView
+            }
+        })
+    }
+
+    func render() -> any View {
+        let components = content()
+        return AnyView(VStack(alignment: .leading) {
+            ForEach(0 ..< components.count, id: \.self) { index in
+                components[index].render() as! AnyView
+            }
+        })
+    }
+}
+
 private struct _SectionView: View {
     let title: String
     let content: () -> [any Component]
