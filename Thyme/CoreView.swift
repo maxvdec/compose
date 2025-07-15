@@ -273,4 +273,11 @@ public final class ThymeScene: ObservableObject {
         self.objects = objects
         self.camera = camera
     }
+    
+    /// Add a CoreObject to a Thyme Scene
+    /// - Parameter object: The object that should be added
+    public func addObject(_ object: CoreObject) {
+        self.objects.append(object)
+        self.appObjects.append(Object(name: "Object " + String(self.objects.count), coreObject: object))
+    }
 }

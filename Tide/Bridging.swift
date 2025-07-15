@@ -5,10 +5,13 @@
 //  Created by Max Van den Eynde on 13/7/25.
 //
 
+import Combine
+import SwiftUI
+
 /// Class that represents a object in a scene
-public class Object<T> {
+public class Object<T>: ObservableObject {
     /// The Core Object that depends of each renderer: Thyme, Arch or Trace
-    public var coreObject: T
+    @Published public var coreObject: T
     /// The name of the object
     public var name: String
 

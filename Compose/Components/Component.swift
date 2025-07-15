@@ -25,7 +25,9 @@ public protocol Modifier {
     /// A unique identifier to detect the modifier
     var keyname: String { get }
     /// The object in the Thyme viewport where you can change its properties
-    var thymeObject: Object<CoreObject>? { get set }
+    var thymeScene: ThymeScene? { get set }
+    /// The Index of the object that should be modified
+    var objectIndex: Int? { get set }
 }
 
 /// Simple padding component for UI

@@ -7,8 +7,8 @@
 
 import Combine
 import SwiftUI
-import Tide
 import Thyme
+import Tide
 
 class UITestModifierModel: ObservableObject {
     @Published var vectorTest: Vector3d = [0, 0, 0]
@@ -20,11 +20,12 @@ class UITestModifierModel: ObservableObject {
 
 /// Test modifier for core UI elements
 struct UITestModifier: Modifier {
-    var thymeObject: Tide.Object<Thyme.CoreObject>? = nil
+    var thymeScene: Thyme.ThymeScene? = nil
+    var objectIndex: Int? = nil
+
     var name: String = "UI Test"
     var icon: String? = "macwindow"
     var keyname: String = "test.uitest"
-    
 
     var model: UITestModifierModel = .init()
 

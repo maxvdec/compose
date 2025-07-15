@@ -69,7 +69,9 @@ struct Inspector: View {
             .offset(x: offsetX)
         }
         .frame(maxHeight: .infinity)
-        .onAppear { modifiers = [TransformModifier(thymeObject: scene.appObjects.first), UITestModifier()] }
+        .onAppear {
+            modifiers = [TransformModifier(thymeScene: scene, index: 0), UITestModifier()]
+        }
     }
 }
 
