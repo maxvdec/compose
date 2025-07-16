@@ -4,8 +4,14 @@ import SceneKit
 import Tide
 
 public extension CoreObject {
-    /// Load a 3D model using Model I/O with comprehensive error handling and normal generation
+    /// Load a 3D model from URL by first getting the MDLMesh, then processing it
     static func loadModel(from url: URL, defaultColor: Tide.Color = .shadeOfWhite(1)) throws -> CoreObject {
+        let mesh = try loadMDLMesh(from: url)
+        return try importMDLMesh(mesh, defaultColor: defaultColor)
+    }
+    
+    /// Load MDLMesh from URL with comprehensive error handling
+    static func loadMDLMesh(from url: URL) throws -> MDLMesh {
         guard FileManager.default.fileExists(atPath: url.path) else {
             throw ModelLoadingError.fileNotFound
         }
@@ -20,11 +26,17 @@ public extension CoreObject {
             throw ModelLoadingError.noGeometryFound
         }
         
-        if firstObject.vertexAttributeData(forAttributeNamed: MDLVertexAttributeNormal) == nil {
-            firstObject.addNormals(withAttributeNamed: MDLVertexAttributeNormal, creaseThreshold: 0.5)
+        return firstObject
+    }
+    
+    /// Import an MDLMesh into a CoreObject with normal generation
+    static func importMDLMesh(_ mesh: MDLMesh, defaultColor: Tide.Color = .shadeOfWhite(1)) throws -> CoreObject {
+        // Add normals if they don't exist
+        if mesh.vertexAttributeData(forAttributeNamed: MDLVertexAttributeNormal) == nil {
+            mesh.addNormals(withAttributeNamed: MDLVertexAttributeNormal, creaseThreshold: 0.5)
         }
         
-        let (vertices, indices) = try extractVerticesAndIndicesFromMDLMesh(firstObject, defaultColor: defaultColor)
+        let (vertices, indices) = try extractVerticesAndIndicesFromMDLMesh(mesh, defaultColor: defaultColor)
         
         guard !vertices.isEmpty else {
             throw ModelLoadingError.noGeometryFound

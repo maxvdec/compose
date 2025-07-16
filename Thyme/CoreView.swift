@@ -209,16 +209,17 @@ public final class ThymeMetalView: NSObject, MTKViewDelegate {
         renderEncoder.setRenderPipelineState(pipelineState)
         renderEncoder.setDepthStencilState(depthStencilState)
 
-        var uniforms = Uniforms()
-        uniformsBuffer = uniforms.makeBuffer()
-        uniforms.projection = camera.projection
-        uniforms.view = camera.view
-        uniforms.cameraPosition = camera.position.toSimd()
-
         for object in objects {
             renderEncoder.setVertexBuffer(object.buffer, offset: 0, index: 0)
+
+            var uniforms = Uniforms()
+            uniforms.projection = camera.projection
+            uniforms.view = camera.view
+            uniforms.cameraPosition = camera.position.toSimd()
             uniforms.model = object.model
-            uniforms.modifyBuffer(&uniformsBuffer)
+
+            let uniformsBuffer = uniforms.makeBuffer()
+
             renderEncoder.setVertexBuffer(uniformsBuffer, offset: 0, index: 1)
             renderEncoder.setFragmentBuffer(uniformsBuffer, offset: 0, index: 1)
 
@@ -273,11 +274,11 @@ public final class ThymeScene: ObservableObject {
         self.objects = objects
         self.camera = camera
     }
-    
+
     /// Add a CoreObject to a Thyme Scene
     /// - Parameter object: The object that should be added
     public func addObject(_ object: CoreObject) {
-        self.objects.append(object)
-        self.appObjects.append(Object(name: "Object " + String(self.objects.count), coreObject: object))
+        objects.append(object)
+        appObjects.append(Object(name: "Object " + String(objects.count), coreObject: object))
     }
 }

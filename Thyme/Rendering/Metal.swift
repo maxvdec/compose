@@ -29,7 +29,7 @@ struct Uniforms {
         return device.makeBuffer(bytes: &data, length: MemoryLayout<Self>.stride, options: [])!
     }
 
-    func modifyBuffer(_ buffer: inout MTLBuffer) {
+    func modifyBuffer(_ buffer: MTLBuffer) {
         var newData = self
         let pointer = buffer.contents()
         memcpy(pointer, &newData, MemoryLayout<Self>.stride)
